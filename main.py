@@ -60,14 +60,18 @@ class VoiceBot:
         self.stop_transcription()
 
         # generate response from OpenAI
-        response = self.chatbot.generate_response(transcript)
-
-        print("[Bot]: ", response)
+        response_generator = self.chatbot.generate_response(transcript)
+        print(type(response_generator)) 
+        # print("[Bot]: ", response)
 
         # speak response using ElevenLabs
-        speak(response)
+        speak(response_generator)
         
         self.start_transcription()
-
-voice_bot = VoiceBot()
-voice_bot.start_transcription()
+if __name__ == "__main__":
+    voice_bot = VoiceBot()
+    try:
+        voice_bot.start_transcription()
+    except KeyboardInterrupt:
+        print("Interrupted by user. Shutting down...")
+        voice_bot.stop_transcription()

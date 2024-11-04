@@ -43,18 +43,23 @@ class SalesChatbot:
             {"role": "system", "content": NOOKS_ASSISTANT_PROMPT}
         ]
 
-    def generate_response(self, user_input):
+    def generate_response(self, user_input: str):
         self.conversation_history.append({"role": "user", "content": user_input})
-
-        response = client.chat.completions.create(
+        
+        response_stream = client.chat.completions.create(
             model="gpt-4",
-            messages=self.conversation_history
+            messages=self.conversation_history,
+            stream=True
         )
-
-        ai_response = response.choices[0].message.content
+        ai_response = ""
+        for chunk in response_stream:
+            chunk_msg = chunk.choices[0].delta.content
+            if chunk_msg:
+                yield chunk_msg
+                print(chunk_msg, end="\r")
+                ai_response += chunk_msg
+        yield ""
         self.conversation_history.append({"role": "assistant", "content": ai_response})
-
-        return ai_response
 
     def get_conversation_history(self):
         return self.conversation_history

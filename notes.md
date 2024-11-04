@@ -5,6 +5,14 @@
 - CANNOT change to use different APIs
 - CANNOT change the 500ms wait on silence
 
+## Current Flow
+
+- user says something
+- aai transcription starts
+- wait 500ms of silence
+- send transcript to openai, get response
+- send response to elevenlabs api for tts
+
 ## Potential Improvements
 
 - stream response from OpenAI API
