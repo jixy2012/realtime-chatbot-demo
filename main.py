@@ -5,7 +5,7 @@ from packages.sales_chatbot import SalesChatbot
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 class VoiceBot:
 

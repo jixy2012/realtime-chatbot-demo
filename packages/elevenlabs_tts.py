@@ -4,7 +4,7 @@ from elevenlabs import play
 from elevenlabs.client import ElevenLabs
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Get API key from environment
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")

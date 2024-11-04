@@ -128,6 +128,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*.env
+.env
 
 # Spyder project settings
 .spyderproject
@@ -161,5 +163,3 @@ cython_debug/
 #.idea/# pixi environments
 .pixi
 *.egg-info
-
-.env
