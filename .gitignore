@@ -161,3 +161,5 @@ cython_debug/
 #.idea/# pixi environments
 .pixi
 *.egg-info
+
+.env
