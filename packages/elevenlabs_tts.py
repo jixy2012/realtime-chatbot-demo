@@ -14,16 +14,17 @@ ELEVENLABS_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # Default voice, you can change th
 
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 aclient = AsyncElevenLabs(api_key=ELEVENLABS_API_KEY)
-def speak(text: str) -> float:
+async def speak(text: str) -> float:
     try:
-        audio = client.generate(
+        audio = await aclient.generate(
             text=text,
             voice=ELEVENLABS_VOICE_ID,
-            model="eleven_monolingual_v1"
+            model="eleven_monolingual_v1",
+            stream=True, 
         )
-        timestamp = time.time()
-        play(audio)
-        return timestamp
+        listen_task = asyncio.create_task(stream(audio))
+        return await listen_task
+
 
     except Exception as e:
         print(f"Error in text-to-speech: {str(e)}")
@@ -36,11 +37,8 @@ import base64
 import shutil
 import os
 import subprocess
-from openai import AsyncOpenAI
 
 # Set OpenAI API key
-aclient = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
 def is_installed(lib_name: str) -> bool:
     return shutil.which(lib_name) is not None
 

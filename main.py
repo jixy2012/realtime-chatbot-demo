@@ -44,8 +44,8 @@ class VoiceBot:
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
             print("[User]: " + transcript.text, end="\n")            
-            # asyncio.run(self.respond_stream(transcript.text))
-            self.respond(transcript.text)
+            asyncio.run(self.respond_stream(transcript.text))
+            # asyncio.run(self.respond(transcript.text))
 
 
         else:
@@ -57,14 +57,14 @@ class VoiceBot:
     def on_close(self):
         return
     
-    def respond(self, transcript: str):
+    async def respond(self, transcript: str):
         start_time = time.time()
 
         self.stop_transcription()
         # generate response from OpenAI
         response = self.chatbot.generate_response(transcript)
         # speak response using ElevenLabs
-        end_time = speak(response)
+        end_time = await speak(response)
         print("[Bot]: ", response)
         duration = end_time - start_time
         print(f"latency: {duration}", flush=True)
