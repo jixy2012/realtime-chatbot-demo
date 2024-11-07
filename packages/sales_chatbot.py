@@ -72,7 +72,7 @@ class SalesChatbot:
             chunk_msg = chunk.choices[0].delta.content
             if chunk_msg:
                 yield chunk_msg
-                ai_response += chunk_msg
+                # ai_response += chunk_msg
         self.conversation_history.append({"role": "assistant", "content": ai_response})
 
 
