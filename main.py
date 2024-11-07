@@ -44,8 +44,8 @@ class VoiceBot:
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
             print("[User]: " + transcript.text, end="\n")            
-            asyncio.run(self.respond_stream(transcript.text))
-            # asyncio.run(self.respond(transcript.text))
+            # asyncio.run(self.respond_stream(transcript.text))
+            asyncio.run(self.respond(transcript.text))
 
 
         else:

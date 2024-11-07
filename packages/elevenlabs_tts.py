@@ -62,7 +62,6 @@ async def stream(audio_stream):
             mpv_process.stdin.write(chunk)
             mpv_process.stdin.flush()
             if first_chunk:
-                print("Started streaming audio", flush=True)
                 timestamp = time.time()
                 first_chunk = False
     if mpv_process.stdin:

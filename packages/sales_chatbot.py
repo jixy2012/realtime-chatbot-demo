@@ -51,7 +51,7 @@ class SalesChatbot:
 
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=self.conversation_history
+            messages=self.conversation_history,
         )
 
         ai_response = response.choices[0].message.content
@@ -68,11 +68,14 @@ class SalesChatbot:
         )
 
         ai_response = ""
+        print("[Bot]: ", end="", flush=True)
         async for chunk in response_stream:
             chunk_msg = chunk.choices[0].delta.content
             if chunk_msg:
                 yield chunk_msg
-                # ai_response += chunk_msg
+                ai_response += chunk_msg
+                print(f"{chunk_msg}", end="", flush=True)
+        print(flush=True)
         self.conversation_history.append({"role": "assistant", "content": ai_response})
 
 
