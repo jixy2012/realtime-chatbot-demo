@@ -43,14 +43,11 @@ class VoiceBot:
             return
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
-            print("[User]: " + transcript.text, end="\n")
-            start_time = time.time()
+            print("[User]: " + transcript.text, end="\n")            
+            # asyncio.run(self.respond_stream(transcript.text))
+            self.respond(transcript.text)
 
-            asyncio.run(self.respond_stream(transcript.text))
-            
-            end_time = time.time()
-            duration = end_time - start_time
-            print(f"latency: {duration}", end="\n", flush=True)
+
         else:
             print("[User]: " + transcript.text, end="\r")
 
@@ -61,23 +58,33 @@ class VoiceBot:
         return
     
     def respond(self, transcript: str):
+        start_time = time.time()
 
         self.stop_transcription()
         # generate response from OpenAI
         response = self.chatbot.generate_response(transcript)
-        print("[Bot]: ", response)
-
         # speak response using ElevenLabs
-        speak(response)
-
+        end_time = speak(response)
+        print("[Bot]: ", response)
+        duration = end_time - start_time
+        print(f"latency: {duration}", flush=True)
         self.start_transcription()
     async def respond_stream(self, transcript: str):
+        start_time = time.time()
 
         self.stop_transcription()
 
         response_generator = self.chatbot.generate_response_stream(transcript)
-        await text_to_speech_input_streaming(response_generator)
-
+        end_time = await text_to_speech_input_streaming(response_generator)
+        if not end_time:
+            raise RuntimeError()
+        # end_time = time.time()
+        duration = end_time - start_time
+        response = self.chatbot.get_conversation_history()[-1]["content"]
+        print("\r[Bot]: " + response, end="\n", flush=True)
+        print(f"time to start talking: {duration}")
+        # per_word = duration / len(response.split())
+        # print(f"latency: {duration}, latency per word in response: {per_word}", flush=True)
         self.start_transcription()
 
 if __name__ == "__main__":

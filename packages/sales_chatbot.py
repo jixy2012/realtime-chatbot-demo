@@ -1,4 +1,6 @@
+import asyncio
 import os
+import sys
 from dotenv import load_dotenv
 from openai import OpenAI, AsyncOpenAI
 import time
@@ -59,7 +61,6 @@ class SalesChatbot:
     
     async def generate_response_stream(self, user_input: str) -> AsyncGenerator[str, None]:
         self.conversation_history.append({"role": "user", "content": user_input})
-        
         response_stream = await aclient.chat.completions.create(
             model="gpt-4",
             messages=self.conversation_history,
@@ -67,22 +68,13 @@ class SalesChatbot:
         )
 
         ai_response = ""
-        yield " "
-        # first_chunk = await anext(response_stream)
-        # first_chunk_msg = first_chunk.choices[0].delta.content
-        # if first_chunk_msg:
-        #     yield first_chunk_msg
-        #     yield first_chunk_msg
-        #     ai_response += first_chunk_msg
         async for chunk in response_stream:
             chunk_msg = chunk.choices[0].delta.content
             if chunk_msg:
                 yield chunk_msg
-                ai_response += chunk_msg    
-            # print("[Bot]: " + ai_response, end="\r", flush=True)
-
-        print("\r[Bot]: " + ai_response, end="\n", flush=True)             
+                ai_response += chunk_msg
         self.conversation_history.append({"role": "assistant", "content": ai_response})
+
 
 
     def get_conversation_history(self) -> list[dict[str, str]]:

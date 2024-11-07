@@ -8,20 +8,23 @@ from typing import AsyncGenerator
 # Get API key from environment
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+import time
 ELEVENLABS_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # Default voice, you can change this
 
 
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 aclient = AsyncElevenLabs(api_key=ELEVENLABS_API_KEY)
-def speak(text: str):
+def speak(text: str) -> float:
     try:
         audio = client.generate(
             text=text,
             voice=ELEVENLABS_VOICE_ID,
             model="eleven_monolingual_v1"
         )
+        timestamp = time.time()
         play(audio)
+        return timestamp
+
     except Exception as e:
         print(f"Error in text-to-speech: {str(e)}")
         raise e
@@ -54,13 +57,20 @@ async def stream(audio_stream):
         ["mpv", "--no-cache", "--no-terminal", "--", "fd://0"],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
+    timestamp = None
+    first_chunk = True
     async for chunk in audio_stream:
         if chunk:
             mpv_process.stdin.write(chunk)
             mpv_process.stdin.flush()
+            if first_chunk:
+                print("Started streaming audio", flush=True)
+                timestamp = time.time()
+                first_chunk = False
     if mpv_process.stdin:
         mpv_process.stdin.close()
     mpv_process.wait()
+    return timestamp
 
 
 # async version of the text_chunker function as elevenlabs.realtime_tts.text_chunker
@@ -73,11 +83,9 @@ async def text_chunker(chunks: AsyncGenerator[str, None]):
         if not text:
             continue
         if buffer.endswith(splitters):
-            print(buffer, text, flush=True)
             yield buffer + " "
             buffer = text
         elif text.startswith(splitters):
-            print(buffer, text, flush=True)
             yield buffer + text[0] + " "
             buffer = text[1:]
         else:
@@ -118,4 +126,4 @@ async def text_to_speech_input_streaming(text_iterator: AsyncGenerator[str, None
 
         await websocket.send(json.dumps({"text": ""}))
 
-        await listen_task
+        return await listen_task
