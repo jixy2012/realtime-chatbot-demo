@@ -1,13 +1,14 @@
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
-
+from openai import OpenAI, AsyncOpenAI
+import time
 # Load environment variables
 load_dotenv(override=True)
-
+from typing import AsyncGenerator
 # Get API key from environment
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
+aclient = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 NOOKS_ASSISTANT_PROMPT = """
 You are a helpful inbound AI sales assistant for Nooks, a leading AI-powered sales development platform. Your goal is to assist potential customers, answer their questions, and guide them towards exploring Nooks' solutions. Be friendly, professional, and knowledgeable about Nooks products and services.
@@ -43,23 +44,46 @@ class SalesChatbot:
             {"role": "system", "content": NOOKS_ASSISTANT_PROMPT}
         ]
 
-    def generate_response(self, user_input: str):
+    def generate_response(self, user_input: str) -> str:
+        self.conversation_history.append({"role": "user", "content": user_input})
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=self.conversation_history
+        )
+
+        ai_response = response.choices[0].message.content
+        self.conversation_history.append({"role": "assistant", "content": ai_response})
+
+        return ai_response
+    
+    async def generate_response_stream(self, user_input: str) -> AsyncGenerator[str, None]:
         self.conversation_history.append({"role": "user", "content": user_input})
         
-        response_stream = client.chat.completions.create(
+        response_stream = await aclient.chat.completions.create(
             model="gpt-4",
             messages=self.conversation_history,
             stream=True
         )
+
         ai_response = ""
-        for chunk in response_stream:
+        yield " "
+        # first_chunk = await anext(response_stream)
+        # first_chunk_msg = first_chunk.choices[0].delta.content
+        # if first_chunk_msg:
+        #     yield first_chunk_msg
+        #     yield first_chunk_msg
+        #     ai_response += first_chunk_msg
+        async for chunk in response_stream:
             chunk_msg = chunk.choices[0].delta.content
             if chunk_msg:
                 yield chunk_msg
-                print(chunk_msg, end="\r")
-                ai_response += chunk_msg
-        yield ""
+                ai_response += chunk_msg    
+            # print("[Bot]: " + ai_response, end="\r", flush=True)
+
+        print("\r[Bot]: " + ai_response, end="\n", flush=True)             
         self.conversation_history.append({"role": "assistant", "content": ai_response})
 
-    def get_conversation_history(self):
+
+    def get_conversation_history(self) -> list[dict[str, str]]:
         return self.conversation_history
