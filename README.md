@@ -17,7 +17,7 @@ Please also include a recorded video showing how fast your chatbot implementatio
 
 - **current improvements to reduce latency**
 
-  - _Streaming Response_: The response from the OpenAI API is now streamed, which allows for partial processing and quicker turnaround times.
+  - _Streaming Response_: The response from the OpenAI API is now streamed, which allows for partial processing and quicker turnaround times. The chunks are printed to the screen as they stream in.
   - _Asynchronous Audio Playback_: As responses are received incrementally from the OpenAI API, they are sent in real-time to the ElevenLabs API, and the audio playback begins simultaneously. This streaming mechanism cuts down on waiting times between the user's query and the system's verbal response.
 
 - project notes can be found at [notes.md](notes.md)
@@ -29,4 +29,4 @@ Please see this loom recording for a demo.
 ### Future Improvements
 
 - faster API responses using Groq?
-- streaming the OpenAI response texts to screen as chunks are received sequentially. Printing with `flush=True` lead to messy terminal outputs. need a better way of presenting this.
+- possible to delegate inference to user browser?
