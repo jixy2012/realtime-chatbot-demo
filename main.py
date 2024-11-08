@@ -44,8 +44,7 @@ class VoiceBot:
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
             print("[User]: " + transcript.text, end="\n")            
-            # asyncio.run(self.respond_stream(transcript.text))
-            asyncio.run(self.respond(transcript.text))
+            asyncio.run(self.respond_stream(transcript.text))
 
 
         else:
@@ -58,6 +57,10 @@ class VoiceBot:
         return
     
     async def respond(self, transcript: str):
+        """
+            This is the original respond method with 
+            slight modifications to make it async.
+        """
         start_time = time.time()
 
         self.stop_transcription()
@@ -70,6 +73,18 @@ class VoiceBot:
         print(f"latency: {duration}", flush=True)
         self.start_transcription()
     async def respond_stream(self, transcript: str):
+        """
+        
+            This is the optimized approach to achieve lower latency.
+            
+            We first get an async generator from openai's api that
+            streams the response, and send that generator directly to 
+            the Elevenlab's websocket api for tts generation.
+
+            The latency measured is the time from this function being invoked
+            to the audio starting to play.
+        
+        """
         start_time = time.time()
 
         self.stop_transcription()
@@ -78,13 +93,8 @@ class VoiceBot:
         end_time = await text_to_speech_input_streaming(response_generator)
         if not end_time:
             raise RuntimeError()
-        # end_time = time.time()
         duration = end_time - start_time
-        response = self.chatbot.get_conversation_history()[-1]["content"]
-        print("\r[Bot]: " + response, end="\n", flush=True)
         print(f"time to start talking: {duration}")
-        # per_word = duration / len(response.split())
-        # print(f"latency: {duration}, latency per word in response: {per_word}", flush=True)
         self.start_transcription()
 
 if __name__ == "__main__":

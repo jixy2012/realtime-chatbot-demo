@@ -38,13 +38,20 @@ import shutil
 import os
 import subprocess
 
+# referenced elevenlab's official documentation on websockets for these
+# following functions.
+
 # Set OpenAI API key
 def is_installed(lib_name: str) -> bool:
     return shutil.which(lib_name) is not None
 
 # async version of the stream function at elevenlabs.stream
 async def stream(audio_stream):
-    """Stream audio data using mpv player."""
+    """
+        Stream audio data using mpv player.
+        Returns the timestamp for when the first chunk of audio is played
+        to measure latency in `main.py`.
+    """
     if not is_installed("mpv"):
         raise ValueError(
             "mpv not found, necessary to stream audio. "
@@ -91,8 +98,12 @@ async def text_chunker(chunks: AsyncGenerator[str, None]):
     if buffer:
         yield buffer + " "
 
-async def text_to_speech_input_streaming(text_iterator: AsyncGenerator[str, None], voice_id: str = ELEVENLABS_VOICE_ID):
-    """Send text to ElevenLabs API and stream the returned audio."""
+async def text_to_speech_input_streaming(text_iterator: AsyncGenerator[str, None], voice_id: str = ELEVENLABS_VOICE_ID) -> float:
+    """
+        Send text to ElevenLabs API and stream the returned audio.
+        Returns the timestamp for when the first chunk of audio is played
+        to measure latency in `main.py`.
+    """
     uri = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input?model_id=eleven_turbo_v2_5"
 
     async with websockets.connect(uri) as websocket:
